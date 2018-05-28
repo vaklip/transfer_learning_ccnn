@@ -167,5 +167,5 @@ with tf.Session(graph=graph) as session:
 print('\nOverall test accuracy: %.1f%%' % accuracy(test_pred, test_labels))
     
 # Saving data
-np.savez("results_ccnn_class_CONVconstFULLconst.npz", \
+np.savez("results_ccnn_class_backtransfer.npz", \
     labels=test_labels, predictions=test_pred)
