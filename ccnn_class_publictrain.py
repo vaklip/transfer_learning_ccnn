@@ -36,7 +36,7 @@ data_tensor = data_tensor.astype(np.float32)
 
 # Loading labels
 labels_csv = np.loadtxt("labels_public.csv", delimiter=',')                      
-labels = labels_csv[:, 4]
+labels = labels_csv[:, 2]
 
 # %% ####################### Function definitions #############################
 # Define functions for tensor randomization, normalization, and performance 
