@@ -191,6 +191,13 @@ test_preds = []
 
 # %% ######################### launch TensorFlow ##############################
 
+# Preallocating arrays to save weights & biases
+layer3_weights_save = np.zeros([num_folds, 256, 96])
+layer4_weights_save = np.zeros([num_folds, 96, num_labels])
+
+layer3_biases_save = np.zeros([num_folds, 96])
+layer4_biases_save = np.zeros([num_folds, num_labels])
+
 # Iterating over folds
 for i in range(num_folds):
     
@@ -307,6 +314,13 @@ for i in range(num_folds):
         test_labs.append(test_labels)
         test_preds.append(test_pred)
 
+        # Storing weights & biases
+        layer3_weights_save[i, :, :] = layer3_weights.eval()
+        layer4_weights_save[i, :, :] = layer4_weights.eval()
+        
+        layer3_biases_save[i, :] = layer3_biases.eval()
+        layer4_biases_save[i, :] = layer4_biases.eval()
+
 # Create np.array to store all predictions and labels
 l = test_labs[0]
 p = test_preds[0]   
@@ -325,3 +339,23 @@ if initmode == 1:
 elif initmode == 2:
     np.savez("results_ccnn_class_CONVconstFULLinit.npz", \
         labels=l, predictions=p, splits=IDs)
+    
+# Saving weights and biases
+if initmode == 1:
+    pickle_file = "weights_ccnn_class_CONVconstFULLtrain.pickle"
+elif initmode == 2:
+    pickle_file = "weights_ccnn_class_CONVconstFULLinit.pickle"
+
+try:
+    f = open(pickle_file, 'wb')
+    save = {
+            'layer3_weights': layer3_weights_save,
+            'layer3_biases': layer3_biases_save,
+            'layer4_weights': layer4_weights_save,
+            'layer4_biases': layer4_biases_save,
+            }
+    pickle.dump(save, f, pickle.HIGHEST_PROTOCOL)
+    f.close()
+except Exception as e:
+    print('Unable to save data to', pickle_file, ':', e)
+    raise
