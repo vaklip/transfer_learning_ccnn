@@ -98,12 +98,7 @@ def accuracy(predictions, labels):
   
 # %% ####### Preparing the data and initializing network parameters ###########
 
-numROI = 111
-num_channels = 1
 num_labels = 2
-image_size = numROI
-batch_size = 4
-patch_size = image_size
 keep_pr = 0.6   # the probability that each element is kept during dropout
 
 # Replacing NaNs with 0s and normalizing data
