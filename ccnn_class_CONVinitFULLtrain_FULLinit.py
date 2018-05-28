@@ -24,8 +24,8 @@ https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/udacity
 @author: Pál Vakli & Regina J. Deák-Meszlényi (RCNS-HAS-BIC)
 """
 # %% ############## Selecting the initialization mode and folds ###############
-# To evaluate the condition 'CONVconstFULLtrain' you have to run this script
-# with 'initmode' set to 1. To evaluate the condition 'CONVconstFULLinit', you
+# To evaluate the condition 'CONVinitFULLtrain' you have to run this script
+# with 'initmode' set to 1. To evaluate the condition 'CONVinitFULLinit', you
 # have to set 'initmode' to 2. 
 initmode = 2 # 1 = Randomly initializing the weights and bias terms of the fully 
              # connected layers in each fold of the cross-validation (weights and
