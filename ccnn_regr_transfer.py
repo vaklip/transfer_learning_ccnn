@@ -189,6 +189,9 @@ for i in range(num_folds):
     train_data, train_labels, test_data, test_labels = \
     create_train_and_test_data(i, IDs, subjects, labels, data_tensor)
     
+    train_data = train_data[:, :image_size, :image_size, :]
+    test_data = test_data[:, :image_size, :image_size, :]
+    
     # Drawing the computational graph    
     graph = tf.Graph()
     
@@ -197,7 +200,7 @@ for i in range(num_folds):
         # Input data placeholders
         tf_train_dataset = tf.placeholder(tf.float32, shape=(batch_size, image_size, image_size, num_channels))
         tf_train_labels = tf.placeholder(tf.float32, shape=(batch_size, num_labels))
-        
+                
         # Test data is a constant
         tf_test_dataset = tf.constant(test_data)
       

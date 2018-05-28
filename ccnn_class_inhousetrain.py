@@ -98,6 +98,9 @@ train_labels = (np.arange(num_labels) == labels[:,None]).astype(np.float32)
 
 # %% ###################### launching TensorFlow ##############################
 
+# Adjusting image size
+train_data = train_data[:, :image_size, :image_size, :]
+
 # Defining the computational graph    
 graph = tf.Graph()
     

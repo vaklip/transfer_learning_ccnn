@@ -118,6 +118,9 @@ train_labels = labels
 
 # %% ##################### launching TensorFlow ###############################
 
+# Adjusting image size
+train_data = train_data[:, :image_size, :image_size, :]
+
 # Drawing the computational graph    
 graph = tf.Graph()
     
