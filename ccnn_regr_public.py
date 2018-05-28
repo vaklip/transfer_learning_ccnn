@@ -32,7 +32,7 @@ import tensorflow as tf
 from six.moves import cPickle as pickle
 
 # Loading the connectivity matrices
-picklefile = "CORR_tensor_public.pickle"
+picklefile = "CORR_tensor_public_regr.pickle"
 
 with open(picklefile, 'rb') as f:
     save = pickle.load(f)
@@ -40,7 +40,7 @@ with open(picklefile, 'rb') as f:
     del save
 
 # Loading labels
-labels_csv = np.loadtxt("labels_public.csv", delimiter=',')
+labels_csv = np.loadtxt("labels_public_regr.csv", delimiter=',')
 labels = labels_csv[:, 1]
 labels = np.reshape(labels, (labels.shape[0], -1))
 
