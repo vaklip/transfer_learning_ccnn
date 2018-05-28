@@ -292,4 +292,4 @@ for i in range(1, num_folds):
 print('\nOverall R squared: %.2f' % r_squared(labels=l, predictions=p))
     
 # Saving data
-np.savez("results_ccnn_regr_transfer.npz", labels=l, predictions=p)
+np.savez("results_ccnn_regr_transfer.npz", labels=l, predictions=p, splits=IDs)
