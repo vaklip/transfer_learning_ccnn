@@ -17,8 +17,8 @@ neural networks' by Vakli, Deák-Meszlényi, Hermann, & Vidnyánszky.
 @author: Pál Vakli & Regina J. Deák-Meszlényi (RCNS-HAS-BIC)
 """
 ############################### File names ####################################
-class_1 = 'results_ccnn_class_CONVinitFULLtrain.npz'
-class_2 = 'results_ccnn_class_CONVtrainFULLtrain.npz'
+class_1 = 'results_ccnn_class_CONVinitFULLtrain_inhouse.npz'
+class_2 = 'results_ccnn_class_CONVtrainFULLtrain_inhouse.npz'
 
 ###################### Importing necessary libraries ##########################
 import numpy as np
@@ -45,14 +45,14 @@ with np.load(class_1) as data:
     true_labels1 = data['labels']
     pred_labels1 = data['predictions']
     # There was no cross-validation in CONVconstFULLconst
-    if class_1 != 'results_ccnn_class_CONVconstFULLconst.npz':
+    if (class_1 != 'results_ccnn_class_CONVconstFULLconst_inhouse.npz') | (class_1 != 'results_ccnn_class_CONVconstFULLconst_NKI-RS_subset.npz'):
         splits1 = data['splits']
     
 with np.load(class_2) as data:
     true_labels2 = data['labels']
     pred_labels2 = data['predictions']
     # There was no cross-validation in CONVconstFULLconst
-    if class_2 != 'results_ccnn_class_CONVconstFULLconst.npz':
+    if (class_2 != 'results_ccnn_class_CONVconstFULLconst_inhouse.npz') | (class_2 != 'results_ccnn_class_CONVconstFULLconst_NKI-RS_subset.npz'):
         splits2 = data['splits']
 
 # Calculating accuracies
@@ -66,20 +66,26 @@ pred_labels1 = np.round(pred_labels1[:, 1])
 pred_labels2 = np.round(pred_labels2[:, 1])
 
 # Sorting subject IDs
-if class_1 != 'results_ccnn_class_CONVconstFULLconst.npz':
+if (class_1 != 'results_ccnn_class_CONVconstFULLconst_inhouse.npz') | (class_1 != 'results_ccnn_class_CONVconstFULLconst_NKI-RS_subset.npz'):
     ids1 = np.sort(splits1, axis=0)
     ids1 = ids1.reshape((ids1.size, -1), order='F')
     ids1 = ids1[~np.logical_not(ids1)]
 else:
-    labels = np.loadtxt('labels_inhouse.txt', delimiter=',')
+    if class_1[-11] == "inhouse.npz":
+        labels = np.loadtxt('labels_inhouse.txt', delimiter=',')
+    elif class_1[-11] == "_subset.npz":
+        labels = np.loadtxt("labels_NKI-RS_subset.csv", delimiter=',')
     ids1 = labels[:, 0]
 
-if class_2 != 'results_ccnn_class_CONVconstFULLconst.npz':
+if (class_2 != 'results_ccnn_class_CONVconstFULLconst_inhouse.npz') | (class_2 != 'results_ccnn_class_CONVconstFULLconst_NKI-RS_subset.npz'):
     ids2 = np.sort(splits2, axis=0)
     ids2 = ids2.reshape((ids2.size, -1), order='F')
     ids2 = ids2[~np.logical_not(ids2)]
 else:
-    labels = np.loadtxt('labels_inhouse.txt', delimiter=',')
+    if class_2[-11] == "inhouse.npz":
+        labels = np.loadtxt('labels_inhouse.txt', delimiter=',')
+    elif class_2[-11] == "_subset.npz":
+        labels = np.loadtxt("labels_NKI-RS_subset.csv", delimiter=',')
     ids2 = labels[:, 0]
 
 # If ids1 ~= ids2, rearranging the elements of ids1 to match those of ids2, 

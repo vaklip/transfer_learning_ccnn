@@ -2,10 +2,11 @@
 """
 Created on Thu Oct 19 14:59:51 2017
 
-This script trains a connectome-convolutional neural network on the in-house dataset to 
-regress chronological age against resting-state functional connectivity matrices 
-using 10-fold cross-validation (the folds are stored in 'folds_inhouse.npy'). 
-The results are saved into 'results_ccnn_regr_baseline.npz'.
+This script trains a connectome-convolutional neural network on the in-house 
+dataset / NKI-RS subset to regress chronological age against resting-state 
+functional connectivity matrices using 10-fold cross-validation (the folds are 
+stored in 'folds_inhouse.npy' / 'folds_NKI-RS_subset.npy'). The results are saved 
+into 'results_ccnn_regr_baseline*.npz'.
 
 This script was used for the baseline regression condition in the manuscript 
 'Transfer learning improves resting-state functional connectivity pattern 
@@ -17,6 +18,13 @@ https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/udacity
 
 @author: Pál Vakli & Regina J. Deák-Meszlényi (RCNS-HAS-BIC)
 """
+# %% ################### Selecting the the target dataset #####################
+# To use the in-house dataset as the target dataset, you have to run this script
+# with 'target_data' set to 1. To use the NKI-RS subset as the target dataset, 
+# you have to set 'target_data' to 2. 
+target_data = 1   # 1 = in-house dataset
+                  # 2 = NKI-RS subset
+
 # %% ########################## Loading data ##################################                
 # Importing necessary libraries
 import numpy as np
@@ -24,14 +32,21 @@ import tensorflow as tf
 from six.moves import cPickle as pickle
 
 # loading the correlation matrices
-pickle_file = 'CORR_tensor_inhouse.pickle'
+if target_data == 1:
+    pickle_file = "CORR_tensor_inhouse.pickle"
+elif target_data == 2:
+    pickle_file = "CORR_tensor_NKI-RS_subset.pickle"
+    
 with open(pickle_file, 'rb') as f:
   save = pickle.load(f)
   data_tensor = save['data_tensor']
   del save                                                                     # hint to help gc free up memory
 
 # Loading the labels
-labels_csv = np.loadtxt("labels_inhouse.txt", delimiter=',')
+if target_data == 1:
+    labels_csv = np.loadtxt("labels_inhouse.txt", delimiter=',')                              
+elif target_data == 2:
+    labels_csv = np.loadtxt("labels_NKI-RS_subset.csv", delimiter=',')
 labels = labels_csv[:, 2]
 labels = np.reshape(labels, (labels.shape[0], -1))
 
@@ -140,7 +155,10 @@ data_tensor[np.isnan(data_tensor)] = 0
 data_tensor = normalize_tensor(data_tensor)
 
 # Loading folds
-IDs = np.load('folds_inhouse.npy')
+if target_data == 1:
+    IDs = np.load('folds_inhouse.npy')
+elif target_data == 2:
+    IDs = np.load('folds_NKI-RS_subset.npy')
 
 # Variables to store test labels and predictions later on
 test_labs = []
@@ -288,10 +306,16 @@ for i in range(1, num_folds):
 print('Final R squared: %.2f' % r_squared(labels=l, predictions=p))
 
 # Save data
-np.savez("results_ccnn_regr_baseline.npz", labels=l, predictions=p, splits=IDs)
-
+if target_data == 1:
+    np.savez("results_ccnn_regr_baseline_inhouse.npz", labels=l, predictions=p, splits=IDs)
+elif target_data == 2:
+    np.savez("results_ccnn_regr_baseline_NKI-RS_subset.npz", labels=l, predictions=p, splits=IDs)
+    
 # Saving weights and biases
-pickle_file = "weights_ccnn_regr_baseline.pickle"
+if target_data == 1:
+    pickle_file = "weights_ccnn_regr_baseline_inhouse.pickle"
+elif target_data == 2:
+    pickle_file = "weights_ccnn_regr_baseline_NKI-RS_subset.pickle"
 
 try:
     f = open(pickle_file, 'wb')

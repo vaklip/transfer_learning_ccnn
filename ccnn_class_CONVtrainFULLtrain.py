@@ -2,10 +2,12 @@
 """
 Created on Mon Nov 13 15:32:10 2017
 
-This script trains a connectome-convolutional neural network on the in-house dataset to 
-classify age category based on resting-state functional connectivity matrices 
-using 10-fold cross-validation, using the folds stored in 'folds_inhouse.npy'. 
-The results are saved into 'results_ccnn_class_CONVtrainFULLtrain.npz'.
+This script trains a connectome-convolutional neural network on the in-house 
+dataset / NKI-RS subset to classify age category based on resting-state functional 
+connectivity matrices using 10-fold cross-validation, using the folds stored in 
+'folds_inhouse.npy' / 'folds_NKI-RS_subset.npy', respectively. 
+The results are saved into 'results_ccnn_class_CONVtrainFULLtrain_inhouse.npz' /
+'results_ccnn_class_CONVtrainFULLtrain_NKI-RS_subset.npz'.
 
 This script was used for the baseline classification condition 'CONVtrainFULLtrain' 
 in the manuscript 'Transfer learning improves resting-state functional connectivity 
@@ -17,6 +19,13 @@ https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/udacity
 
 @author: Pál Vakli & Regina J. Deák-Meszlényi (RCNS-HAS-BIC)
 """
+# %% ################### Selecting the the target dataset #####################
+# To use the in-house dataset as the target dataset, you have to run this script
+# with 'target_data' set to 1. To use the NKI-RS subset as the target dataset, 
+# you have to set 'target_data' to 2. 
+target_data = 1   # 1 = in-house dataset
+                  # 2 = NKI-RS subset
+
 # %% ########################### Loading data #################################
 
 # Importing necessary libraries
@@ -25,14 +34,21 @@ import tensorflow as tf
 from six.moves import cPickle as pickle
 
 # loading the correlation matrices
-pickle_file = 'CORR_tensor_inhouse.pickle'
+if target_data == 1:
+    pickle_file = "CORR_tensor_inhouse.pickle"
+elif target_data == 2:
+    pickle_file = "CORR_tensor_NKI-RS_subset.pickle"
+    
 with open(pickle_file, 'rb') as f:
     save = pickle.load(f)
     data_tensor = save['data_tensor']
     del save                                                                     
 
 # Loading labels and subjects
-labels_csv = np.loadtxt("labels_inhouse.txt", delimiter=',')
+if target_data == 1:
+    labels_csv = np.loadtxt("labels_inhouse.txt", delimiter=',')                              
+elif target_data == 2:
+    labels_csv = np.loadtxt("labels_NKI-RS_subset.csv", delimiter=',')
 labels = labels_csv[:, 1]
 
 subjectIDs = labels_csv[:, 0]
@@ -148,7 +164,10 @@ data_tensor[np.isnan(data_tensor)] = 0
 data_tensor = normalize_tensor(data_tensor)
 
 # Loading folds
-IDs = np.load('folds_inhouse.npy')
+if target_data == 1:
+    IDs = np.load('folds_inhouse.npy')
+elif target_data == 2:
+    IDs = np.load('folds_NKI-RS_subset.npy')
 
 # Variables to store test labels and predictions later on
 test_labs = []
@@ -297,11 +316,17 @@ for i in range(1, num_folds):
 print('\nFinal test accuracy: %.1f%%' % accuracy(p, l))
 
 # Saving data
-np.savez("results_ccnn_class_CONVtrainFULLtrain.npz", labels=l, predictions=p, splits=IDs)
-
+if target_data == 1:
+    np.savez("results_ccnn_class_CONVtrainFULLtrain_inhouse.npz", labels=l, predictions=p, splits=IDs)
+elif target_data == 2:
+    np.savez("results_ccnn_class_CONVtrainFULLtrain_NKI-RS_subset.npz", labels=l, predictions=p, splits=IDs)
+    
 # Saving weights and biases
-pickle_file = "weights_ccnn_class_CONVtrainFULLtrain.pickle"
-
+if target_data == 1:
+    pickle_file = "weights_ccnn_class_CONVtrainFULLtrain_inhouse.pickle"
+elif target_data == 2:
+    pickle_file = "weights_ccnn_class_CONVtrainFULLtrain_NKI-RS_subset.pickle"
+    
 try:
     f = open(pickle_file, 'wb')
     save = {

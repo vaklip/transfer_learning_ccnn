@@ -2,16 +2,17 @@
 """
 Created on Mon Nov 06 17:52:34 2017
 
-This script implements a connectome-convolutional neural network to classify age category
-on the in-house dataset based on resting-state functional connectivity matrices.
-The weights and bias terms of the convolutional layers are fixed and correspond
-to those learned previously on the public dataset, stored in 'weights_public'. 
-The weights and bias terms of the fully connected layers are either randomly 
-initialized (set 'initmode' to 1 below) or initialized based on the values learned 
-previously on the public dataset (set 'initmode' to 2) and trained in each fold 
-of the 10-fold cross-validation on the in-house dataset (folds are stored in
-'folds_inhouse.npy). Results are saved into 'results_ccnn_class_CONVconstFULLtrain.npz' 
-and 'results_ccnn_class_CONVconstFULLtrain.npz', respectively.  
+This script implements a connectome-convolutional neural network to classify age 
+category on the in-house dataset / NKI-RS subset based on resting-state functional 
+connectivity matrices. The weights and bias terms of the convolutional layers 
+are fixed and correspond to those learned previously on the public dataset, 
+stored in 'weights_public'. The weights and bias terms of the fully connected 
+layers are either randomly initialized (set 'initmode' to 1 below) or initialized 
+based on the values learned previously on the public dataset (set 'initmode' to 2) 
+and trained in each fold of the 10-fold cross-validation on the in-house dataset 
+/ NKI-RS subset (folds are stored in 'folds_inhouse.npy' / 'folds_NKI-RS_subset.npy'). 
+Results are saved into 'results_ccnn_class_CONVconstFULLtrain*.npz' 
+and 'results_ccnn_class_CONVconstFULLtrain*.npz', respectively.  
 
 This script was used for the conditions 'CONVconstFULLtrain' and 'CONVconstFULLinit' 
 in the manuscript 'Transfer learning improves resting-state functional connectivity 
@@ -23,7 +24,7 @@ https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/udacity
 
 @author: Pál Vakli & Regina J. Deák-Meszlényi (RCNS-HAS-BIC)
 """
-# %% ############## Selecting the initialization mode and folds ###############
+# %% ####### Selecting the initialization mode and the target dataset #########
 # To evaluate the condition 'CONVconstFULLtrain' you have to run this script
 # with 'initmode' set to 1. To evaluate the condition 'CONVconstFULLinit', you
 # have to set 'initmode' to 2. 
@@ -34,7 +35,12 @@ initmode = 2 # 1 = Randomly initializing the weights and bias terms of the fully
              # layers based on the values learned previously on the public dataset
              # in each fold of the cross-validation (weights and biases of the 
              # convolutional layers are constants).
-
+# To use the in-house dataset as the target dataset, you have to run this script
+# with 'target_data' set to 1. To use the NKI-RS subset as the target dataset, 
+# you have to set 'target_data' to 2. 
+target_data = 1   # 1 = in-house dataset
+                  # 2 = NKI-RS subset
+                  
 # %% ############################ Loading data ################################
 
 # Importing necessary libraries
@@ -43,7 +49,10 @@ import tensorflow as tf
 from six.moves import cPickle as pickle
 
 # loading the correlation matrices
-picklefile = "CORR_tensor_inhouse.pickle"
+if target_data == 1:
+    picklefile = "CORR_tensor_inhouse.pickle"
+elif target_data == 2:
+    picklefile = "CORR_tensor_NKI-RS_subset.pickle"
     
 with open(picklefile, 'rb') as f:
     save = pickle.load(f)
@@ -51,7 +60,10 @@ with open(picklefile, 'rb') as f:
     del save
 
 # Loading labels
-labels_csv = np.loadtxt("labels_inhouse.txt", delimiter=',')
+if target_data == 1:
+    labels_csv = np.loadtxt("labels_inhouse.txt", delimiter=',')                              
+elif target_data == 2:
+    labels_csv = np.loadtxt("labels_NKI-RS_subset.csv", delimiter=',')
 labels = labels_csv[:, 1]
     
 subjectIDs = labels_csv[:, 0]                                                  
@@ -183,8 +195,11 @@ data_tensor[np.isnan(data_tensor)] = 0
 data_tensor = normalize_tensor(data_tensor)
 
 # Loading folds
-IDs = np.load('folds_inhouse.npy')
-
+if target_data == 1:
+    IDs = np.load('folds_inhouse.npy')
+elif target_data == 2:
+    IDs = np.load('folds_NKI-RS_subset.npy')
+    
 # Variables to store test labels and predictions later on
 test_labs = []
 test_preds = []
@@ -334,17 +349,27 @@ print('\nOverall test accuracy: %.1f%%' % accuracy(p, l))
     
 # Save data
 if initmode == 1:
-    np.savez("results_ccnn_class_CONVconstFULLtrain.npz", \
-        labels=l, predictions=p, splits=IDs)
+    result_filename = "results_ccnn_class_CONVconstFULLtrain.npz"
 elif initmode == 2:
-    np.savez("results_ccnn_class_CONVconstFULLinit.npz", \
+    result_filename = "results_ccnn_class_CONVconstFULLinit.npz"
+
+if target_data == 1:
+    np.savez(result_filename+"_inhouse.npz", \
+        labels=l, predictions=p, splits=IDs)
+elif target_data == 2:
+    np.savez(result_filename+"_NKI-RS_subset.npz", \
         labels=l, predictions=p, splits=IDs)
     
 # Saving weights and biases
 if initmode == 1:
-    pickle_file = "weights_ccnn_class_CONVconstFULLtrain.pickle"
+    weight_filename = "weights_ccnn_class_CONVconstFULLtrain"
 elif initmode == 2:
-    pickle_file = "weights_ccnn_class_CONVconstFULLinit.pickle"
+    weight_filename = "weights_ccnn_class_CONVconstFULLinit"
+
+if target_data == 1:
+    pickle_file = weight_filename + "_inhouse.pickle"
+elif target_data == 2:
+    pickle_file = weight_filename + "_NKI-RS_subset.pickle"
 
 try:
     f = open(pickle_file, 'wb')
